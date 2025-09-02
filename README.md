@@ -39,7 +39,8 @@ It supports both **USER** and **ADMIN** roles with **JWT-based authentication** 
 - A **User** can register for many **Events**
 - An **Event** can have many **Registrations**
 - Each **Registration** generates one **Payment**
-
+- One User (Admin) can create many Events.
+- Each Event is created by exactly one User.
 ---
 
 ## 📂 API Endpoints
@@ -109,33 +110,6 @@ It supports both **USER** and **ADMIN** roles with **JWT-based authentication** 
 
 ---
 
-## 🛠️ Setup Instructions
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/soems.git
-   cd soems
-   ```
-2. Configure **application.properties** with your DB and Razorpay keys:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/soems
-   spring.datasource.username=root
-   spring.datasource.password=yourpassword
-
-   razorpay.key.id=your_key
-   razorpay.key.secret=your_secret
-   ```
-3. Build & run with Maven:
-   ```bash
-   mvn clean install
-   mvn spring-boot:run
-   ```
-4. Access API at:
-   ```
-   http://localhost:8080/EventManagement
-   ```
-
----
-
 ## 📖 Example Requests
 
 ### Register User
@@ -148,6 +122,48 @@ POST /auth/register
   "role": "ADMIN"
 }
 ```
+
+### Login User
+```json
+POST /auth/login
+{
+  "email": "diganta@gmail.com",
+  "password": "Diganta@123"
+}
+```
+
+### Get User by ID
+```json
+GET /users/1
+Response:
+{
+  "id": 1,
+  "username": "Diganta",
+  "email": "diganta@gmail.com",
+  "role": "ADMIN"
+}
+```
+
+### Update User
+```json
+POST /users/update
+{
+  "id": 1,
+  "username": "DigantaS",
+  "email": "digantas@example.com",
+  "password": "Digantas@123",
+  "role": "ADMIN"
+}
+```
+
+### Delete User
+```json
+DELETE /users/4
+Response:
+"User deleted successfully"
+```
+
+---
 
 ### Create Event (Admin)
 ```json
@@ -162,6 +178,149 @@ POST /events
   "maxParticipants": 500,
   "amount": 1500,
   "createdBy": 2
+}
+```
+
+### Get Event by ID
+```json
+GET /events/1
+Response:
+{
+  "eventId": 1,
+  "eventName": "Annual Tech Conference",
+  "description": "A conference on latest technology trends.",
+  "location": "Bangalore",
+  "startDate": "2025-12-12",
+  "endDate": "2025-12-15",
+  "registrationDeadline": "2025-12-01",
+  "participantsCount": 215,
+  "maxParticipants": 500,
+  "amount": 1500,
+  "createdBy": 2
+}
+```
+
+### Update Event
+```json
+PUT /events/1
+{
+  "eventName": "Annual Tech Conference",
+  "description": "Updated description"
+}
+```
+
+### Delete Event
+```json
+DELETE /events/3
+Response:
+"Event deleted successfully"
+```
+
+### Get Available Seats
+```json
+GET /events/1/available-seats
+Response:
+285
+```
+
+---
+
+### Register User for Event
+```json
+POST /registrations/event/1/user/7
+Response:
+{
+  "id": 101,
+  "eventId": 1,
+  "userId": 7,
+  "registerDate": "2025-11-20"
+}
+```
+
+### Get Registrations by User
+```json
+GET /registrations/user/7
+Response:
+[
+  {
+    "id": 101,
+    "eventId": 1,
+    "registerDate": "2025-11-20"
+  }
+]
+```
+
+### Cancel Registration
+```json
+DELETE /registrations/cancel/1/7
+Response:
+"Registration cancelled successfully"
+```
+
+---
+
+### Create Payment
+```json
+POST /api/payments
+{
+  "registrationId": 101,
+  "userId": 7,
+  "eventId": 1,
+  "amount": 1500,
+  "paymentDate": "2025-11-21",
+  "paymentStatus": "PAID"
+}
+```
+
+### Get Payment by ID
+```json
+GET /api/payments/5
+Response:
+{
+  "id": 5,
+  "registrationId": 101,
+  "userId": 7,
+  "eventId": 1,
+  "amount": 1500,
+  "paymentDate": "2025-11-21",
+  "paymentStatus": "PAID"
+}
+```
+
+### Get Payments for Event
+```json
+GET /api/payments/event/1
+Response:
+[
+  {
+    "id": 5,
+    "registrationId": 101,
+    "userId": 7,
+    "eventId": 1,
+    "amount": 1500,
+    "paymentDate": "2025-11-21",
+    "paymentStatus": "PAID"
+  }
+]
+```
+
+### Event Revenue Report
+```json
+GET /api/payments/event/1/revenue
+Response:
+150000
+```
+
+---
+
+### Create Razorpay Order
+```json
+POST /api/payments/create-order?amount=1500
+Response:
+{
+  "id": "order_9A33XWu170gUtm",
+  "amount": 1500,
+  "currency": "INR"
 }
 ```
 
